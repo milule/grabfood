@@ -3,6 +3,7 @@ import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import { GuardRoute, Layout } from "./components";
 import { useInit } from "./utils";
+import Main from "./screens/Main";
 import Login from "./screens/Login";
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
       <Layout>
         <Switch>
           <Route path="/Login" component={Login} />
-          <GuardRoute path="/" component={null} />
+          <GuardRoute path="/" component={Main} />
           <Redirect to="/" />
         </Switch>
       </Layout>

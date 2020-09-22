@@ -8,4 +8,9 @@ export const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(1.5),
     background: theme.palette.primary.main,
   },
+  toggle: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+  },
 }));

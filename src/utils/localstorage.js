@@ -28,6 +28,10 @@ export function getTokenStore() {
   }
 }
 
+export function clearTokenStore() {
+  localStorage.removeItem("token");
+}
+
 export function clearUserStore() {
   localStorage.removeItem("user");
 }

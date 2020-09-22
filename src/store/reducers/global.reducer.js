@@ -1,19 +1,26 @@
 import { GlobalType } from "../types";
 
 const initialState = {
-  loading: {},
+  location: {},
 };
 
 const globalReducer = (state = initialState, action) => {
   switch (action.type) {
-    case GlobalType.SET_LOADING:
+    case GlobalType.SET_LOCATION:
       return {
         ...state,
-        loading: {
-          ...state.loading,
-          ...action.loading,
+        location: {
+          ...state.location,
+          ...action.location,
         },
       };
+
+    case GlobalType.CLEAR_LOCATION:
+      return {
+        ...state,
+        location: {},
+      };
+
     default:
       return state;
   }

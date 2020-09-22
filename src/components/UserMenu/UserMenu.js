@@ -10,13 +10,13 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import InboxIcon from "@material-ui/icons/MoveToInbox";
 import { Box, Divider } from "@material-ui/core";
-import { useAuth } from "../../utils";
 import { useStyles } from "./UserMenu.styled";
+import { useAuth, clearUserStore, clearTokenStore } from "../../utils";
 
 const UserMenu = memo(() => {
   const [open, setOpen] = React.useState(false);
   const classes = useStyles();
-  const { isAuth, user } = useAuth();
+  const { isAuth, user, logout } = useAuth();
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -24,6 +24,13 @@ const UserMenu = memo(() => {
 
   const handleDrawerClose = () => {
     setOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setOpen(false);
+    clearUserStore();
+    clearTokenStore();
   };
 
   function renderList() {
@@ -35,7 +42,7 @@ const UserMenu = memo(() => {
           </ListItemIcon>
           <ListItemText primary={"Thông tin đơn hàng"} />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={handleLogout}>
           <ListItemIcon>
             <InboxIcon />
           </ListItemIcon>
@@ -49,7 +56,11 @@ const UserMenu = memo(() => {
 
   return (
     <Fragment>
-      <IconButton onClick={handleDrawerOpen}>
+      <IconButton
+        name="toggle"
+        className={classes.toggle}
+        onClick={handleDrawerOpen}
+      >
         <MenuIcon />
       </IconButton>
       <Drawer

@@ -1,12 +1,22 @@
 import { GlobalType } from "../types";
 
-export const loading = (effect, global = true) => (dispatch, getState) => {
-  const { loading: current } = { ...getState().global };
+export const setLocation = (lat, lng) => (dispatch, getState) => {
+  const { location } = getState().global;
+  const { latitude, longitude, isAllow } = location;
 
-  global = typeof global === "boolean" ? global : true;
-  current[effect] = current[effect] || {};
-  current[effect].call = !current[effect].call;
-  current[effect].global = global;
+  if (latitude === lat && longitude === lng) return;
+  if (lat === 0 && lng === 0) return;
 
-  dispatch({ type: GlobalType.SET_LOADING, loading: current });
+  location.latitude = lat;
+  location.longitude = lng;
+
+  if (!isAllow) {
+    location.isAllow = true;
+  }
+
+  dispatch({ type: GlobalType.SET_LOCATION, location });
 };
+
+export const clearLocation = () => ({
+  type: GlobalType.CLEAR_LOCATION,
+});
