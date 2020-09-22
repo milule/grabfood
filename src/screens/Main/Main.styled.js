@@ -25,7 +25,7 @@ export const useStyles = makeStyles((theme) => ({
     display: "flex",
     position: "absolute",
     alignItems: "center",
-    padding: theme.spacing(2),
+    padding: theme.spacing(1),
   },
   serchinput: {
     height: 30,
