@@ -50,15 +50,20 @@ const address = [
 const Main = memo(() => {
   const socket = useRef(null);
   const classes = useStyles();
+  const { user } = useAuth();
   const { location } = useGlobal();
   const { map, initMap } = useMapBox();
   const [open, setOpen] = useState(false);
   const [destination, setDestination] = useState(null);
 
   useEffect(() => {
-    socket.current = createSocket();
     initMap(document.getElementById("mapbox"));
   }, []);
+
+  useEffect(() => {
+    if(!location.isAllow) return;
+    socket.current = createSocket({ ...user, ...location });
+  },[location.isAllow])
 
   const canBeUse = useMemo(() => {
     return !!location.isAllow;
@@ -138,6 +143,7 @@ const Main = memo(() => {
       </Box>
       <DialogForm
         open={open}
+        user={user}
         classes={classes}
         location={location}
         destination={destination}
@@ -147,8 +153,7 @@ const Main = memo(() => {
   );
 });
 
-const DialogForm = memo(({ open, classes, destination, onClose }) => {
-  const { user } = useAuth();
+const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
   const [form, setForm] = useState({
     userName: "",
     userPhone: "",
