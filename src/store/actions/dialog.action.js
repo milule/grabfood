@@ -4,8 +4,8 @@ export const open = (mode, customProps = {}, dialogProps = {}) => (
   dispatch
 ) => {
   customProps = typeof customProps === "object" ? customProps : {};
-  customProps.onConfirm = customProps.onConfirm || dispatch(close);
-  customProps.onCancel = customProps.onCancel || dispatch(close);
+  customProps.onConfirm = customProps.onConfirm || dispatch(close());
+  customProps.onCancel = customProps.onCancel || dispatch(close());
 
   dispatch({ type: DialogType.OPEN, mode, customProps, dialogProps });
 };

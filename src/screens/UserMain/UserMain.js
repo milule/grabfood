@@ -4,7 +4,7 @@ import Box from "@material-ui/core/Box";
 import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
 import InputBase from "@material-ui/core/InputBase";
-import MarkerIcon from "@material-ui/icons/Room";
+import MarkerIcon from "@material-ui/icons/LocationOn";
 import OriginIcon from "@material-ui/icons/TripOrigin";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import Dialog from "@material-ui/core/Dialog";
@@ -16,9 +16,19 @@ import CloseIcon from "@material-ui/icons/Close";
 import Slide from "@material-ui/core/Slide";
 import TextField from "@material-ui/core/TextField";
 
+import { USER_ID } from "../../constanst";
 import { useStyles } from "./UserMain.styled";
-import { orderProducts } from "../../api/order.api";
-import { createSocket, useAuth, useGlobal, useMapBox } from "../../utils";
+import {
+  useAuth,
+  useGlobal,
+  useMapBox,
+  useToast,
+  //
+  createSocket,
+  createUserLayer,
+  createEmptySource,
+  createFeatureWithLatLng,
+} from "../../utils";
 
 const address = [
   {
@@ -50,24 +60,68 @@ const address = [
 const Main = memo(() => {
   const socket = useRef(null);
   const classes = useStyles();
+  const toast = useToast();
   const { user } = useAuth();
   const { location } = useGlobal();
-  const { map, initMap } = useMapBox();
+  const { map, isMapLoaded, loadMapImages, initMap } = useMapBox();
   const [open, setOpen] = useState(false);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState(null);
 
   useEffect(() => {
-    initMap(document.getElementById("mapbox"));
-  }, []);
+    async function init() {
+      await initMap(document.getElementById("mapbox"));
+      await loadMapImages();
+
+      setupUserLayer();
+      updateUserLayer();
+    }
+
+    if (isMapLoaded || !location.isAllow) return;
+    init();
+  }, [isMapLoaded, location.isAllow]);
 
   useEffect(() => {
-    if(!location.isAllow) return;
+    if (!location.isAllow) return;
     socket.current = createSocket({ ...user, ...location });
-  },[location.isAllow])
+    listenTopic();
+  }, [location.isAllow]);
 
   const canBeUse = useMemo(() => {
     return !!location.isAllow;
   }, [location]);
+
+  function setupUserLayer() {
+    map.current.addSource(USER_ID, createEmptySource());
+    map.current.addLayer(createUserLayer());
+  }
+
+  function updateUserLayer() {
+    const source = map.current.getSource(USER_ID);
+
+    if (!source) return;
+    source.setData(
+      createFeatureWithLatLng(location.latitude, location.longitude)
+    );
+  }
+
+  function listenTopic() {
+    if (!socket.current) return;
+    socket.current.on("accept-request", handleAcceptRequest);
+    socket.current.on("cancel-request", handleCancelRequest);
+  }
+
+  function handleAcceptRequest(info) {
+    setLoading(false);
+    toast.success("Đơn hàng của bạn đã được chấp nhận");
+    setOrder(info);
+  }
+
+  function handleCancelRequest() {
+    setLoading(false);
+    toast.error("Không tìm thấy tài xế");
+  }
 
   const handleDestinationChange = (_, value) => {
     setDestination(value);
@@ -80,6 +134,13 @@ const Main = memo(() => {
 
   const handleCloseForm = () => {
     setOpen(false);
+  };
+
+  const handleConfirmForm = (order) => {
+    if (!socket.current) return;
+    const params = { order, user, location, destination };
+    setLoading(true);
+    socket.current.emit("request", params);
   };
 
   return (
@@ -143,17 +204,16 @@ const Main = memo(() => {
       </Box>
       <DialogForm
         open={open}
-        user={user}
+        loading={loading}
         classes={classes}
-        location={location}
-        destination={destination}
         onClose={handleCloseForm}
+        onConfirm={handleConfirmForm}
       />
     </section>
   );
 });
 
-const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
+const DialogForm = memo(({ open, classes, loading, onClose, onConfirm }) => {
   const [form, setForm] = useState({
     userName: "",
     userPhone: "",
@@ -169,17 +229,9 @@ const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
     });
   };
 
-  const handleOrderProduct = async () => {
-    try {
-      const params = {
-        user,
-        order: form,
-      };
-
-      const order = await orderProducts(params);
-    } catch (error) {
-      console.log(error);
-    }
+  const handleOrderProduct = () => {
+    if (loading) return;
+    onConfirm(form);
   };
 
   return (
@@ -205,7 +257,11 @@ const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
         <Typography variant="h5" color="secondary">
           Thông tin giao hàng
         </Typography>
-        <IconButton className={classes.closeBtn} onClick={onClose}>
+        <IconButton
+          disabled={loading}
+          className={classes.closeBtn}
+          onClick={onClose}
+        >
           <CloseIcon />
         </IconButton>
       </Box>
@@ -219,6 +275,7 @@ const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
           label="Thông tin địa chỉ"
           value={form.detailAddress}
           onChange={handleFormChange}
+          InputProps={{ readOnly: loading }}
         />
         <TextField
           size="small"
@@ -228,6 +285,7 @@ const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
           label="Tên người nhận"
           value={form.userName}
           onChange={handleFormChange}
+          InputProps={{ readOnly: loading }}
         />
         <TextField
           size="small"
@@ -238,6 +296,7 @@ const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
           label="Số di động"
           value={form.userPhone}
           onChange={handleFormChange}
+          InputProps={{ readOnly: loading }}
         />
         <Typography variant="h6">Thông tin đơn hàng</Typography>
         <TextField
@@ -248,6 +307,7 @@ const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
           label="Sản phẩm"
           value={form.productName}
           onChange={handleFormChange}
+          InputProps={{ readOnly: loading }}
         />
         <TextField
           size="small"
@@ -258,16 +318,18 @@ const DialogForm = memo(({ open, user, classes, destination, onClose }) => {
           label="Trọng lượng"
           value={form.productWeight}
           onChange={handleFormChange}
+          InputProps={{ readOnly: loading }}
         />
       </form>
       <AppBar position="fixed" color="transparent" className={classes.appBar}>
         <Toolbar component={Box} display="flex" justifyContent="center">
           <Button
             variant="contained"
-            color="primary"
+            disableRipple={loading}
             onClick={handleOrderProduct}
+            color={loading ? "secondary" : "primary"}
           >
-            Xác nhận
+            {loading ? "Đang tìm tài xế ..." : "Xác nhận"}
           </Button>
         </Toolbar>
       </AppBar>

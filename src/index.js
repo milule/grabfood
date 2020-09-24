@@ -6,15 +6,18 @@ import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@material-ui/core";
+import { SnackbarProvider } from "notistack";
 import { store } from "./store";
 import { muiTheme } from "./config";
 
 ReactDOM.render(
   <BrowserRouter>
     <Provider store={store}>
-      <ThemeProvider theme={muiTheme}>
-        <App />
-      </ThemeProvider>
+      <SnackbarProvider>
+        <ThemeProvider theme={muiTheme}>
+          <App />
+        </ThemeProvider>
+      </SnackbarProvider>
     </Provider>
   </BrowserRouter>,
   document.getElementById("root")

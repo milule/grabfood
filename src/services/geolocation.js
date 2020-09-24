@@ -4,6 +4,7 @@ function grantPermission() {
 }
 
 const resolvePos = (res) => (position) => {
+  console.log(position);
   res(position.coords);
 };
 
