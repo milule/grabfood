@@ -73,10 +73,8 @@ const Main = memo(() => {
     async function init() {
       await initMap(document.getElementById("mapbox"));
       await loadMapImages();
-      setTimeout(() => {
-        setupUserLayer();
-        updateUserLayer();
-      }, 5000);
+      setupUserLayer();
+      updateUserLayer();
     }
 
     if (isMapLoaded || !location.isAllow) return;
