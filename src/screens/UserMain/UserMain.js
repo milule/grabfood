@@ -58,7 +58,7 @@ const address = [
   },
 ];
 
-const Main = memo(() => {
+const Main = memo(({ history }) => {
   const socket = useRef(null);
   const classes = useStyles();
   const toast = useToast();
@@ -127,8 +127,9 @@ const Main = memo(() => {
 
   function handleAcceptRequest(info) {
     setLoading(false);
+
     toast.success("Đơn hàng của bạn đã được chấp nhận");
-    setOrder(info);
+    history.replace(`/order/${info.uuid}`, { state: { info } });
   }
 
   function handleCancelRequest() {

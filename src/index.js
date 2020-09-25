@@ -11,7 +11,7 @@ import { store } from "./store";
 import { muiTheme } from "./config";
 
 ReactDOM.render(
-  <BrowserRouter>
+  <BrowserRouter basename="/">
     <Provider store={store}>
       <SnackbarProvider>
         <ThemeProvider theme={muiTheme}>

@@ -55,3 +55,72 @@ export const createUserLayer = () => ({
     "text-halo-width": 1.5,
   },
 });
+
+export const createOrderLayer = () => ({
+  id: ORDER_ID,
+  type: "symbol",
+  source: ORDER_ID,
+  layout: {
+    "icon-size": 0.4,
+    "icon-allow-overlap": true,
+    "icon-image": "{icon}",
+    "icon-ignore-placement": true,
+    "text-field": "{text}",
+    "text-size": 13,
+    "text-offset": [0, -1.95],
+    "text-anchor": "center",
+  },
+  paint: {
+    "text-color": "#ffffff",
+    "text-halo-color": "{color}",
+    "text-halo-width": 1.5,
+  },
+});
+
+export const mapOrderDataToDataSource = (info) => {
+  const {
+    customerLat,
+    customerLng,
+    driverLat,
+    driverLng,
+    receiveLat,
+    receiveLng,
+  } = info;
+
+  const data = [
+    {
+      lat: customerLat,
+      lng: customerLng,
+      text: "Vị trí của bạn",
+      color: "#E74C3C",
+      icon: "icon-customer",
+    },
+    {
+      lat: driverLat,
+      lng: driverLng,
+      text: "Vị trí tài xế",
+      color: "#8DC26F",
+      icon: "icon-driver",
+    },
+    {
+      lat: receiveLat,
+      lng: receiveLng,
+      text: "Địa chỉ giao hàng",
+      color: "#FDC830",
+      icon: "icon-receiver",
+    },
+  ];
+
+  return data.map((d) => ({
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [d.lng, d.lat],
+    },
+    properties: {
+      color: d.color,
+      text: d.text,
+      icon: d.icon,
+    },
+  }));
+};

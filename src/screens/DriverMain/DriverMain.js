@@ -9,6 +9,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import PinDropIcon from "@material-ui/icons/PinDrop";
 import PinPersonIcon from "@material-ui/icons/PersonPinCircle";
+import { USER_ID } from "../../constanst";
 import { useStyles } from "./DriverMain.styled";
 import { orderProducts } from "../../api/order.api";
 import {
@@ -20,6 +21,9 @@ import {
   mapOrder,
   closeSocket,
   createSocket,
+  createUserLayer,
+  createEmptySource,
+  createFeatureWithLatLng,
 } from "../../utils";
 
 const Main = memo(() => {
@@ -29,13 +33,28 @@ const Main = memo(() => {
   const { user } = useAuth();
   const { location } = useGlobal();
   const { close, openConfirm } = useDialog();
-  const { map, initMap } = useMapBox();
   const [open, setOpen] = useState(false);
   const [customer, setCustomer] = useState(null);
+  const {
+    map,
+    initMap,
+    isMapLoaded,
+    loadMapImages,
+    fitBoundMarkers,
+  } = useMapBox();
 
   useEffect(() => {
-    initMap(document.getElementById("mapbox"));
-  }, []);
+    async function init() {
+      await initMap(document.getElementById("mapbox"));
+      await loadMapImages();
+      //
+      setupUserLayer();
+      updateUserLayer();
+    }
+
+    if (isMapLoaded || !location.isAllow) return;
+    init().catch();
+  }, [isMapLoaded, location.isAllow]);
 
   useEffect(() => {
     if (!location.isAllow) return;
@@ -48,6 +67,24 @@ const Main = memo(() => {
   const canBeUse = useMemo(() => {
     return !!location.isAllow;
   }, [location]);
+
+  function setupUserLayer() {
+    map.current.addSource(USER_ID, createEmptySource());
+    map.current.addLayer(createUserLayer());
+  }
+
+  function updateUserLayer() {
+    const source = map.current.getSource(USER_ID);
+
+    if (!source) return;
+    const feature = createFeatureWithLatLng(
+      location.latitude,
+      location.longitude
+    );
+
+    source.setData(feature);
+    fitBoundMarkers({ features: [feature] });
+  }
 
   function listenTopic() {
     if (!socket.current) return;
