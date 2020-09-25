@@ -71,19 +71,18 @@ export const useMapBox = (
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   // Create MapBox instance and resolved on load
-  const initMap = useCallback(async (container) => {
-    try {
+  const initMap = useCallback((container) => {
+    return new Promise((resolve) => {
       map.current = new mapboxgl.Map({
         container: container,
         ...options,
       });
 
-      map.current.on("load", () => Promise.resolve());
-
-      setIsMapLoaded(true);
-    } catch (ex) {
-      Promise.reject();
-    }
+      map.current.on("load", () => {
+        resolve();
+        setIsMapLoaded(true);
+      });
+    });
   }, []);
 
   const loadMapImages = async () => {
@@ -110,11 +109,33 @@ export const useMapBox = (
     }
   };
 
+  const fitBoundMarkers = ({ features }) => {
+    if (!features) return;
+    if (!features.length) return;
+
+    try {
+      const bounds = features.reduce((bounds, feature) => {
+        if (!feature.geometry || !feature.geometry.coordinates) return bounds;
+
+        return bounds.extend(feature.geometry.coordinates);
+      }, new mapboxgl.LngLatBounds());
+
+      if (!bounds) return;
+
+      map.current.fitBounds(bounds, { padding: 80 });
+    } catch (error) {
+      console.log("fitBoundMarkers", error);
+    }
+  };
+
+  const fitBoundLines = ({ features }) => {};
+
   return {
     map,
     initMap,
     isMapLoaded,
     loadMapImages,
+    fitBoundMarkers,
   };
 };
 

@@ -19,7 +19,7 @@ const customHeader = {
 };
 
 const config = {
-  baseURL: "https://pri-fastfood.herokuapp.com",
+  baseURL: "http://localhost:5000",
   responseType: "json",
   timeout: 30000,
   maxContentLength: 5000,

@@ -24,6 +24,7 @@ import {
   useMapBox,
   useToast,
   //
+  closeSocket,
   createSocket,
   createUserLayer,
   createEmptySource,
@@ -63,30 +64,37 @@ const Main = memo(() => {
   const toast = useToast();
   const { user } = useAuth();
   const { location } = useGlobal();
-  const { map, isMapLoaded, loadMapImages, initMap } = useMapBox();
   const [open, setOpen] = useState(false);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState(null);
+  const {
+    map,
+    initMap,
+    isMapLoaded,
+    loadMapImages,
+    fitBoundMarkers,
+  } = useMapBox();
 
   useEffect(() => {
     async function init() {
       await initMap(document.getElementById("mapbox"));
       await loadMapImages();
-      setTimeout(() => {
-        setupUserLayer();
-        updateUserLayer();
-      }, 5000);
+      //
+      setupUserLayer();
+      updateUserLayer();
     }
 
     if (isMapLoaded || !location.isAllow) return;
-    init();
+    init().catch();
   }, [isMapLoaded, location.isAllow]);
 
   useEffect(() => {
     if (!location.isAllow) return;
     socket.current = createSocket({ ...user, ...location });
     listenTopic();
+
+    return () => closeSocket(socket.current);
   }, [location.isAllow]);
 
   const canBeUse = useMemo(() => {
@@ -102,9 +110,13 @@ const Main = memo(() => {
     const source = map.current.getSource(USER_ID);
 
     if (!source) return;
-    source.setData(
-      createFeatureWithLatLng(location.latitude, location.longitude)
+    const feature = createFeatureWithLatLng(
+      location.latitude,
+      location.longitude
     );
+
+    source.setData(feature);
+    fitBoundMarkers({ features: [feature] });
   }
 
   function listenTopic() {

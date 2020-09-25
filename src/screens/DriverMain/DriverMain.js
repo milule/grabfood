@@ -12,12 +12,14 @@ import PinPersonIcon from "@material-ui/icons/PersonPinCircle";
 import { useStyles } from "./DriverMain.styled";
 import { orderProducts } from "../../api/order.api";
 import {
-  createSocket,
   useAuth,
   useDialog,
   useGlobal,
   useMapBox,
+  //
   mapOrder,
+  closeSocket,
+  createSocket,
 } from "../../utils";
 
 const Main = memo(() => {
@@ -39,6 +41,8 @@ const Main = memo(() => {
     if (!location.isAllow) return;
     socket.current = createSocket({ ...user, ...location });
     listenTopic();
+
+    return () => closeSocket(socket.current);
   }, [location.isAllow]);
 
   const canBeUse = useMemo(() => {
