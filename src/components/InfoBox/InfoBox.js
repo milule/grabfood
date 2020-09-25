@@ -5,14 +5,16 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import { useStyles } from "./InfoBox.styled";
 
-const InfoBox = memo(() => {
+const InfoBox = memo((info = {}) => {
   const classes = useStyles();
+
+  if (typeof info !== "object") return;
 
   return (
     <Card elevation={0} className={classes.infoBox}>
       <List>
         <ListItem>
-          <ListItemText></ListItemText>
+          <ListItemText>{info}</ListItemText>
         </ListItem>
         <ListItem>
           <ListItemText></ListItemText>
