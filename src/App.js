@@ -11,8 +11,8 @@ import DriverMain from "./screens/DriverMain";
 import OrderDetail from "./screens/OrderDetail";
 
 function App() {
-  const { isAuth } = useInit();
-  if (!isAuth) return null;
+  useInit();
+
   return (
     <main className="App">
       <Layout>
