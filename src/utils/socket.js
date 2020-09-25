@@ -1,7 +1,7 @@
 import io from "socket.io-client";
 
 export function createSocket(params) {
-  return io("http://localhost:5000", {
+  return io("https://pri-fastfood.herokuapp.com", {
     query: params,
   });
 }

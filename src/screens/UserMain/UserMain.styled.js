@@ -4,6 +4,7 @@ export const useStyles = makeStyles((theme) => ({
   main: {
     width: "100vw",
     height: "100vh",
+    maxHeight: "-webkit-fill-available",
     backgroundColor: "white",
     overflowY: "hidden",
     "& .mapboxgl-canvas-container": {
