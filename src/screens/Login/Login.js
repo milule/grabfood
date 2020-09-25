@@ -58,7 +58,7 @@ const Login = memo(() => {
       justifyContent="center"
     >
       <Typography className={classes.logo} variant="h2" gutterBottom>
-        Fast Food
+        Document Delivery
       </Typography>
       <Typography className={classes.title} variant="h4" gutterBottom>
         Welcome Back
