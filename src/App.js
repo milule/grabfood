@@ -11,16 +11,17 @@ import DriverMain from "./screens/DriverMain";
 import OrderDetail from "./screens/OrderDetail";
 
 function App() {
-  useInit();
+  const { isInit } = useInit();
+  if (!isInit) return null;
 
   return (
     <main className="App">
       <Layout>
         <Switch>
-          <Route path="/Login" component={Login} />
-          <UserRoute path="/order" component={OrderList} />
-          <UserRoute path="/order/:id" component={OrderDetail} />
-          <GuardRoute path="/" component={{ UserMain, DriverMain }} />
+          <Route exact path="/Login" component={Login} />
+          <GuardRoute exact path="/" component={{ UserMain, DriverMain }} />
+          <UserRoute exact path="/order" component={OrderList} />
+          <UserRoute exact path="/order/:uuid" component={OrderDetail} />
           <Redirect to="/" />
         </Switch>
       </Layout>

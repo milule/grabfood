@@ -4,10 +4,10 @@ import { USER_ID, ORDER_ID } from "../constanst";
 // TO MAKE THE MAP APPEAR YOU MUST
 // ADD YOUR ACCESS TOKEN FROM
 // https://account.mapbox.com
-mapboxgl.accessToken =
+const accessToken =
   "pk.eyJ1IjoibWlsdWxlIiwiYSI6ImNrZmNmYWFjZjFmYjUyenFzZ2ttbjhmZmgifQ.UkRfCAjw-lMRbypRB2PMcw";
 
-export { mapboxgl };
+export { mapboxgl, accessToken };
 
 export const createEmptyFeature = () => ({
   type: "Feature",
@@ -72,12 +72,14 @@ export const createOrderLayer = () => ({
   },
   paint: {
     "text-color": "#ffffff",
-    "text-halo-color": "{color}",
+    "text-halo-color": ["get", "color"],
     "text-halo-width": 1.5,
   },
 });
 
 export const mapOrderDataToDataSource = (info) => {
+  if (!info) return [];
+
   const {
     customerLat,
     customerLng,

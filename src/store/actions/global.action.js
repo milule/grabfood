@@ -4,8 +4,9 @@ export const setLocation = (lat, lng) => (dispatch, getState) => {
   const { location } = getState().global;
   const { latitude, longitude, isAllow } = location;
 
-  if (latitude === lat && longitude === lng) return;
+  if (latitude && longitude) return;
   if (lat === 0 && lng === 0) return;
+  if (latitude === lat && longitude === lng) return;
 
   location.latitude = lat;
   location.longitude = lng;

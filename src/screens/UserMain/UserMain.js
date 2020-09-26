@@ -17,12 +17,14 @@ import Slide from "@material-ui/core/Slide";
 import TextField from "@material-ui/core/TextField";
 
 import { USER_ID } from "../../constanst";
+import { useHistory } from "react-router-dom";
 import { useStyles } from "./UserMain.styled";
 import {
   useAuth,
   useGlobal,
   useMapBox,
   useToast,
+  useDidUpdateEffect,
   //
   closeSocket,
   createSocket,
@@ -58,10 +60,11 @@ const address = [
   },
 ];
 
-const Main = memo(({ history }) => {
+const Main = memo(() => {
   const socket = useRef(null);
   const classes = useStyles();
   const toast = useToast();
+  const history = useHistory();
   const { user } = useAuth();
   const { location } = useGlobal();
   const [open, setOpen] = useState(false);
@@ -76,9 +79,9 @@ const Main = memo(({ history }) => {
     fitBoundMarkers,
   } = useMapBox();
 
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     async function init() {
-      await initMap(document.getElementById("mapbox"));
+      await initMap(document.getElementById("mapbox-user"));
       await loadMapImages();
       //
       setupUserLayer();
@@ -86,10 +89,11 @@ const Main = memo(({ history }) => {
     }
 
     if (isMapLoaded || !location.isAllow) return;
+
     init().catch();
   }, [isMapLoaded, location.isAllow]);
 
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     if (!location.isAllow) return;
     socket.current = createSocket({ ...user, ...location });
     listenTopic();
@@ -123,18 +127,24 @@ const Main = memo(({ history }) => {
     if (!socket.current) return;
     socket.current.on("accept-request", handleAcceptRequest);
     socket.current.on("cancel-request", handleCancelRequest);
+    socket.current.on("complete-request", handleCompleteRequest);
   }
 
   function handleAcceptRequest(info) {
     setLoading(false);
+    setOpen(false);
 
     toast.success("Đơn hàng của bạn đã được chấp nhận");
-    history.replace(`/order/${info.uuid}`, { state: { info } });
+    history.push(`/order/${info.uuid}`, { info });
   }
 
   function handleCancelRequest() {
     setLoading(false);
     toast.error("Không tìm thấy tài xế");
+  }
+
+  function handleCompleteRequest() {
+    toast.success("Đơn hàng của bạn đã được giao đến nơi");
   }
 
   const handleDestinationChange = (_, value) => {
@@ -159,7 +169,7 @@ const Main = memo(({ history }) => {
 
   return (
     <section className={classes.main}>
-      <div id="mapbox" className={classes.main} />
+      <div id="mapbox-user" className={classes.main} />
       <Card className={classes.searchbox} component="section">
         <Box
           width={30}

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector, useDispatch, shallowEqual } from "react-redux";
 import { useSnackbar } from "notistack";
-import { mapboxgl } from "./mapbox";
+import { mapboxgl, accessToken } from "./mapbox";
 import { getUserStore } from "./localstorage";
 import { geoService } from "../services/geolocation";
 import { authAction, globalAction, dialogAction } from "../store/actions";
@@ -19,8 +19,9 @@ export const useInit = () => {
   }, []);
 
   useEffect(() => {
+    if (!isInit) return;
     initLocation();
-  }, []);
+  }, [isInit]);
 
   const initLocation = useCallback(async () => {
     const permission = geoService.grantPermission();
@@ -73,6 +74,7 @@ export const useMapBox = (
   // Create MapBox instance and resolved on load
   const initMap = useCallback((container) => {
     return new Promise((resolve) => {
+      mapboxgl.accessToken = accessToken;
       map.current = new mapboxgl.Map({
         container: container,
         ...options,
@@ -219,3 +221,12 @@ export const useDialog = () => {
     openCustom,
   };
 };
+
+export function useDidUpdateEffect(fn, inputs) {
+  const didMountRef = useRef(false);
+
+  useEffect(() => {
+    if (didMountRef.current) fn();
+    else didMountRef.current = true;
+  }, inputs);
+}

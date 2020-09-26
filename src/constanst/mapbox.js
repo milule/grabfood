@@ -4,6 +4,7 @@ import iconDriver from "../assets/icons/icon-driver.png";
 
 export const USER_ID = "user";
 export const ORDER_ID = "order";
+export const DRIVER_ID = "driver";
 
 export const MAP_COORDS = [107.08426, 10.34599];
 

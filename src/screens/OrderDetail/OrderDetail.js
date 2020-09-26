@@ -1,21 +1,26 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import { ORDER_ID } from "../../constanst";
+import { InfoBox } from "../../components";
 import { useStyles } from "./OrderDetail.styled";
+import { useLocation, useParams } from "react-router-dom";
+import { orderDetails } from "../../api/order.api";
 import {
   useAuth,
+  useToast,
   useGlobal,
   useMapBox,
-  useToast,
   //
-  createUserLayer,
+  createOrderLayer,
   createEmptySource,
-  createFeatureWithLatLng,
+  mapOrderDataToDataSource,
 } from "../../utils";
 
-const OrderDetail = memo(({ history, match, ...rest }) => {
-  const classes = useStyles();
+const OrderDetail = memo(() => {
   const toast = useToast();
-  const [order, setOrder] = useState(null);
+  const classes = useStyles();
+  const location = useLocation();
+  const { uuid } = useParams();
+  const [order, setOrder] = useState({});
   const {
     map,
     initMap,
@@ -23,9 +28,6 @@ const OrderDetail = memo(({ history, match, ...rest }) => {
     loadMapImages,
     fitBoundMarkers,
   } = useMapBox();
-  console.log(history, match, rest);
-
-  useEffect(() => {}, []);
 
   useEffect(() => {
     async function init() {
@@ -33,25 +35,62 @@ const OrderDetail = memo(({ history, match, ...rest }) => {
       await loadMapImages();
       //
       setupOrderLayer();
+      getOrderInfo();
     }
 
     init().catch();
   }, []);
 
-  function setupOrderLayer() {
-    map.current.addSource(ORDER_ID, createEmptySource());
-    map.current.addLayer(createUserLayer());
+  async function fetchOrderInfo() {
+    try {
+      const params = { uuid };
+      const { data, error } = await orderDetails(params);
+
+      if (error) return;
+
+      setOrder(data);
+      updateOrderLayer(data);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  function updateUserLayer() {
+  function getOrderInfo() {
+    const { info } = location.state || {};
+
+    if (info) {
+      setOrder(info);
+      updateOrderLayer(info);
+      return;
+    }
+
+    fetchOrderInfo();
+  }
+
+  function setupOrderLayer() {
+    map.current.addSource(ORDER_ID, createEmptySource());
+    map.current.addLayer(createOrderLayer());
+  }
+
+  function updateOrderLayer(info) {
     const source = map.current.getSource(ORDER_ID);
 
     if (!source) return;
+
+    const features = mapOrderDataToDataSource(info);
+
+    source.setData({
+      type: "FeatureCollection",
+      features: features,
+    });
+
+    fitBoundMarkers({ features });
   }
 
   return (
     <section className={classes.main}>
       <div id="mapbox" className={classes.main} />
+      <InfoBox info={order} />
     </section>
   );
 });

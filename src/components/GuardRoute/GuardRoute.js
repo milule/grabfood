@@ -3,15 +3,21 @@ import { Redirect, Route } from "react-router-dom";
 import { USER_ROLE } from "../../constanst";
 import { useAuth } from "../../utils";
 
-const GuardRoute = memo(({ path, component: { UserMain, DriverMain } }) => {
+const GuardRoute = memo(({ component: { UserMain, DriverMain }, ...rest }) => {
   const { isAuth, user } = useAuth();
+  const isCustomer = isAuth && user.role === USER_ROLE.CUSTOMER;
 
-  if (!isAuth) return <Redirect to="/login" />;
-
-  const isCustomer = user.role === USER_ROLE.CUSTOMER;
-
-  // prettier-ignore
-  return <Route path={path} component={isCustomer ? UserMain : DriverMain} />;
+  return (
+    <Route {...rest}>
+      {!isAuth ? (
+        <Redirect to="/login" />
+      ) : isCustomer ? (
+        <UserMain />
+      ) : (
+        <DriverMain />
+      )}
+    </Route>
+  );
 });
 
 export default GuardRoute;

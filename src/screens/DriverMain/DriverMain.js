@@ -1,5 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from "react";
-import Card from "@material-ui/core/Card";
+import React, { memo, useMemo, useRef, useState } from "react";
 import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
@@ -9,32 +8,37 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import PinDropIcon from "@material-ui/icons/PinDrop";
 import PinPersonIcon from "@material-ui/icons/PersonPinCircle";
-import { USER_ID } from "../../constanst";
+import { InfoBox } from "../../components";
 import { useStyles } from "./DriverMain.styled";
-import { orderProducts } from "../../api/order.api";
+import { USER_ID, ORDER_ID } from "../../constanst";
+import { orderCheck, orderComplete } from "../../api/order.api";
 import {
   useAuth,
+  useToast,
   useDialog,
   useGlobal,
   useMapBox,
+  useDidUpdateEffect,
   //
   mapOrder,
   closeSocket,
   createSocket,
   createUserLayer,
+  createOrderLayer,
   createEmptySource,
   createFeatureWithLatLng,
+  mapOrderDataToDataSource,
 } from "../../utils";
 
 const Main = memo(() => {
+  const toast = useToast();
   const socket = useRef(null);
   const timeout = useRef(null);
   const classes = useStyles();
   const { user } = useAuth();
   const { location } = useGlobal();
   const { close, openConfirm } = useDialog();
-  const [open, setOpen] = useState(false);
-  const [customer, setCustomer] = useState(null);
+  const [order, setOrder] = useState(null);
   const {
     map,
     initMap,
@@ -43,20 +47,24 @@ const Main = memo(() => {
     fitBoundMarkers,
   } = useMapBox();
 
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     async function init() {
-      await initMap(document.getElementById("mapbox"));
+      await initMap(document.getElementById("mapbox-driver"));
       await loadMapImages();
       //
       setupUserLayer();
+      setupOrderLayer();
       updateUserLayer();
+
+      fetchOrderCheck();
     }
 
     if (isMapLoaded || !location.isAllow) return;
+
     init().catch();
   }, [isMapLoaded, location.isAllow]);
 
-  useEffect(() => {
+  useDidUpdateEffect(() => {
     if (!location.isAllow) return;
     socket.current = createSocket({ ...user, ...location });
     listenTopic();
@@ -67,6 +75,38 @@ const Main = memo(() => {
   const canBeUse = useMemo(() => {
     return !!location.isAllow;
   }, [location]);
+
+  async function fetchOrderCheck() {
+    try {
+      const { data, error } = await orderCheck({});
+      if (error) return;
+
+      toast.success("Bạn có 1 đơn hàng đang trong tiến trình");
+      setOrder(data);
+      updateOrderLayer(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function fetchOrderComplete({ uuid, customer } = order) {
+    try {
+      const params = { uuid, customer };
+      const { error } = await orderComplete(params);
+      if (error) throw Error;
+
+      toast.info(
+        "Bạn đã hoàn thành chuyến giao hàng với số tiền là 50.0000 vnd"
+      );
+
+      setOrder(null);
+      updateUserLayer();
+      updateOrderLayer(null);
+    } catch (error) {
+      console.log(error);
+      toast.error("Bạn chưa hoàn thành chuyến giao hàng");
+    }
+  }
 
   function setupUserLayer() {
     map.current.addSource(USER_ID, createEmptySource());
@@ -84,6 +124,27 @@ const Main = memo(() => {
 
     source.setData(feature);
     fitBoundMarkers({ features: [feature] });
+  }
+
+  function setupOrderLayer() {
+    map.current.addSource(ORDER_ID, createEmptySource());
+    map.current.addLayer(createOrderLayer());
+  }
+
+  function updateOrderLayer(info) {
+    const source = map.current.getSource(ORDER_ID);
+
+    if (!source) return;
+
+    const features = mapOrderDataToDataSource(info);
+
+    source.setData({
+      type: "FeatureCollection",
+      features: features,
+    });
+
+    if (!info) return;
+    fitBoundMarkers({ features });
   }
 
   function listenTopic() {
@@ -116,7 +177,13 @@ const Main = memo(() => {
   function handleAcceptReq(data) {
     if (timeout.current) clearTimeout(timeout.current);
 
+    setOrder(data);
+    updateOrderLayer(data);
     socket.current.emit("accept-request", data);
+  }
+
+  async function handleTripCompleted() {
+    fetchOrderComplete();
   }
 
   function renderTripInfo(data) {
@@ -170,7 +237,8 @@ const Main = memo(() => {
 
   return (
     <section className={classes.main}>
-      <div id="mapbox" className={classes.main} />
+      <div id="mapbox-driver" className={classes.main} />
+      <InfoBox info={order} />
       <Box
         left={0}
         right={0}
@@ -182,8 +250,9 @@ const Main = memo(() => {
         <Button
           variant="contained"
           color="primary"
-          disabled={!canBeUse}
           className={classes.infoBtn}
+          disabled={!canBeUse || !order}
+          onClick={handleTripCompleted}
         >
           Hoàn tất chuyến đi
         </Button>

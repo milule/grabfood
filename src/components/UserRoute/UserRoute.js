@@ -3,14 +3,15 @@ import { Redirect, Route } from "react-router-dom";
 import { USER_ROLE } from "../../constanst";
 import { useAuth } from "../../utils";
 
-const UserRoute = memo(({ path, component }) => {
+const UserRoute = memo(({ component: Component, ...rest }) => {
   const { isAuth, user } = useAuth();
+  const isCustomer = isAuth && user.role === USER_ROLE.CUSTOMER;
 
-  if (!isAuth) return <Redirect to="/login" />;
-
-  if (user.role !== USER_ROLE.CUSTOMER) return null;
-
-  return <Route exact path={path} component={component} />;
+  return (
+    <Route {...rest}>
+      {isAuth && isCustomer ? <Component /> : <Redirect to="/login" />}
+    </Route>
+  );
 });
 
 export default UserRoute;

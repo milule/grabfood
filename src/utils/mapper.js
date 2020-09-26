@@ -1,11 +1,10 @@
 export function mapOrder(data, info, driverLocation) {
-  const { user, location, order, destination } = data;
+  const { user, uuid, location, order, destination } = data;
   const { latitude: customerLat, longitude: customerLng } = location;
   const { latitude: driverLat, longitude: driverLng } = driverLocation;
   const {
-    latitude: receiveLat,
-    longitude: receiveLng,
     address: receiveAddress,
+    position: { latitude: receiveLat, longitude: receiveLng },
   } = destination;
   const {
     username: driverUsername,
@@ -27,6 +26,7 @@ export function mapOrder(data, info, driverLocation) {
   } = order;
 
   return {
+    uuid: uuid,
     customer: customerUsername,
     driver: driverUsername,
     customerName: customerName,
@@ -41,7 +41,7 @@ export function mapOrder(data, info, driverLocation) {
     receivePhone: receivePhone,
     receiveAddress: receiveAddress,
     receiveLat: receiveLat,
-    receiveLat: receiveLng,
+    receiveLng: receiveLng,
     productName: productName,
     productWeight: productWeight,
   };
