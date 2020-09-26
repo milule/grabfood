@@ -3,7 +3,7 @@ import { Redirect, Route } from "react-router-dom";
 import { USER_ROLE } from "../../constanst";
 import { useAuth } from "../../utils";
 
-const GuardRoute = memo(({ component: { UserMain, DriverMain }, ...rest }) => {
+const GuardRoute = ({ component: { UserMain, DriverMain }, ...rest }) => {
   const { isAuth, user } = useAuth();
   const isCustomer = isAuth && user.role === USER_ROLE.CUSTOMER;
 
@@ -18,6 +18,6 @@ const GuardRoute = memo(({ component: { UserMain, DriverMain }, ...rest }) => {
       )}
     </Route>
   );
-});
+};
 
 export default GuardRoute;

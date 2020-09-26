@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
@@ -18,7 +18,6 @@ import {
   useDialog,
   useGlobal,
   useMapBox,
-  useDidUpdateEffect,
   //
   mapOrder,
   closeSocket,
@@ -47,7 +46,7 @@ const Main = memo(() => {
     fitBoundMarkers,
   } = useMapBox();
 
-  useDidUpdateEffect(() => {
+  useEffect(() => {
     async function init() {
       await initMap(document.getElementById("mapbox-driver"));
       await loadMapImages();
@@ -62,9 +61,9 @@ const Main = memo(() => {
     if (isMapLoaded || !location.isAllow) return;
 
     init().catch();
-  }, [isMapLoaded, location.isAllow]);
+  }, [location.isAllow]);
 
-  useDidUpdateEffect(() => {
+  useEffect(() => {
     if (!location.isAllow) return;
     socket.current = createSocket({ ...user, ...location });
     listenTopic();

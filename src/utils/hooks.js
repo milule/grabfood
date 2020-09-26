@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector, useDispatch, shallowEqual } from "react-redux";
 import { useSnackbar } from "notistack";
-import { mapboxgl, accessToken } from "./mapbox";
+import { mapboxgl } from "./mapbox";
 import { getUserStore } from "./localstorage";
 import { geoService } from "../services/geolocation";
 import { authAction, globalAction, dialogAction } from "../store/actions";
@@ -74,7 +74,6 @@ export const useMapBox = (
   // Create MapBox instance and resolved on load
   const initMap = useCallback((container) => {
     return new Promise((resolve) => {
-      mapboxgl.accessToken = accessToken;
       map.current = new mapboxgl.Map({
         container: container,
         ...options,

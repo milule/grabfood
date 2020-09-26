@@ -4,10 +4,10 @@ import { USER_ID, ORDER_ID } from "../constanst";
 // TO MAKE THE MAP APPEAR YOU MUST
 // ADD YOUR ACCESS TOKEN FROM
 // https://account.mapbox.com
-const accessToken =
+mapboxgl.accessToken =
   "pk.eyJ1IjoibWlsdWxlIiwiYSI6ImNrZmNmYWFjZjFmYjUyenFzZ2ttbjhmZmgifQ.UkRfCAjw-lMRbypRB2PMcw";
 
-export { mapboxgl, accessToken };
+export { mapboxgl };
 
 export const createEmptyFeature = () => ({
   type: "Feature",

@@ -24,7 +24,6 @@ import {
   useGlobal,
   useMapBox,
   useToast,
-  useDidUpdateEffect,
   //
   closeSocket,
   createSocket,
@@ -79,7 +78,7 @@ const Main = memo(() => {
     fitBoundMarkers,
   } = useMapBox();
 
-  useDidUpdateEffect(() => {
+  useEffect(() => {
     async function init() {
       await initMap(document.getElementById("mapbox-user"));
       await loadMapImages();
@@ -91,9 +90,9 @@ const Main = memo(() => {
     if (isMapLoaded || !location.isAllow) return;
 
     init().catch();
-  }, [isMapLoaded, location.isAllow]);
+  }, [location.isAllow]);
 
-  useDidUpdateEffect(() => {
+  useEffect(() => {
     if (!location.isAllow) return;
     socket.current = createSocket({ ...user, ...location });
     listenTopic();
