@@ -36,13 +36,13 @@ const UserMenu = memo(() => {
   function renderList() {
     return (
       <Fragment>
-        <ListItem button>
+        <ListItem className={classes.menu} button>
           <ListItemIcon>
             <InboxIcon />
           </ListItemIcon>
           <ListItemText primary={"Thông tin đơn hàng"} />
         </ListItem>
-        <ListItem button onClick={handleLogout}>
+        <ListItem className={classes.menu} button onClick={handleLogout}>
           <ListItemIcon>
             <InboxIcon />
           </ListItemIcon>

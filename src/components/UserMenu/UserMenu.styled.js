@@ -8,6 +8,11 @@ export const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(1.5),
     background: theme.palette.primary.main,
   },
+  menu: {
+    "& .MuiListItemIcon-root": {
+      minWidth: 32,
+    },
+  },
   toggle: {
     position: "absolute",
     top: 0,
