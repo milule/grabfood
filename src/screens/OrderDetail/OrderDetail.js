@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { ORDER_ID } from "../../constanst";
 import { InfoBox } from "../../components";
 import { useStyles } from "./OrderDetail.styled";
@@ -10,15 +10,20 @@ import {
   useGlobal,
   useMapBox,
   //
+  closeSocket,
+  createSocket,
   createOrderLayer,
   createEmptySource,
   mapOrderDataToDataSource,
 } from "../../utils";
 
 const OrderDetail = memo(() => {
+  const socket = useRef(null);
   const toast = useToast();
   const classes = useStyles();
-  const location = useLocation();
+  const locationHistory = useLocation();
+  const { user } = useAuth();
+  const { location } = useGlobal();
   const { uuid } = useParams();
   const [order, setOrder] = useState({});
   const {
@@ -41,6 +46,14 @@ const OrderDetail = memo(() => {
     init().catch();
   }, []);
 
+  useEffect(() => {
+    if (!location.isAllow) return;
+    socket.current = createSocket({ ...user, ...location });
+    listenTopic();
+
+    return () => closeSocket(socket.current);
+  }, [location.isAllow]);
+
   async function fetchOrderInfo() {
     try {
       const params = { uuid };
@@ -55,8 +68,17 @@ const OrderDetail = memo(() => {
     }
   }
 
+  function listenTopic() {
+    if (!socket.current) return;
+    socket.current.on("complete-request", handleCompleteRequest);
+  }
+
+  function handleCompleteRequest() {
+    toast.success("Đơn hàng của bạn đã được giao đến nơi");
+  }
+
   function getOrderInfo() {
-    const { info } = location.state || {};
+    const { info } = locationHistory.state || {};
 
     if (info) {
       setOrder(info);
@@ -77,7 +99,7 @@ const OrderDetail = memo(() => {
 
     if (!source) return;
 
-    const features = mapOrderDataToDataSource(info);
+    const features = mapOrderDataToDataSource(info, true);
 
     source.setData({
       type: "FeatureCollection",

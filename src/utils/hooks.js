@@ -19,9 +19,8 @@ export const useInit = () => {
   }, []);
 
   useEffect(() => {
-    if (!isInit) return;
     initLocation();
-  }, [isInit]);
+  }, []);
 
   const initLocation = useCallback(async () => {
     const permission = geoService.grantPermission();
@@ -36,10 +35,14 @@ export const useInit = () => {
 
 export const useGlobal = () => {
   const dispatch = useDispatch();
-  const { location } = useSelector(({ global }) => global, shallowEqual);
+  const { location, locationDriver } = useSelector(
+    ({ global }) => global,
+    shallowEqual
+  );
 
   return {
     location,
+    locationDriver,
     setLocation: (lat, lng) => dispatch(globalAction.setLocation(lat, lng)),
     clearLocation: () => dispatch(globalAction.clearLocation()),
   };

@@ -1,5 +1,6 @@
 // type for global action
 export const GlobalType = {
   SET_LOCATION: "GLOBAL_SET_LOCATION",
+  SET_LOCATION_DRIVER: "GLOBAL_SET_LOCATION_DRIVER",
   CLEAR_LOCATION: "GLOBAL_CLEAR_LOCATION",
 };

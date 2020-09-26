@@ -7,8 +7,8 @@ export const setLocation = (lat, lng) => (dispatch, getState) => {
   if (lat === 0 && lng === 0) return;
   if (latitude === lat && longitude === lng) return;
 
-  location.latitude = latitude ? latitude : lat;
-  location.longitude = longitude ? longitude : lng;
+  location.latitude = lat;
+  location.longitude = lng;
 
   if (!isAllow) {
     location.isAllow = true;

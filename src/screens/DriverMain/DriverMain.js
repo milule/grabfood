@@ -35,7 +35,7 @@ const Main = memo(() => {
   const timeout = useRef(null);
   const classes = useStyles();
   const { user } = useAuth();
-  const { location } = useGlobal();
+  const { locationDriver: location } = useGlobal();
   const { close, openConfirm } = useDialog();
   const [order, setOrder] = useState(null);
   const {
@@ -51,8 +51,8 @@ const Main = memo(() => {
       await initMap(document.getElementById("mapbox-driver"));
       await loadMapImages();
       //
-      setupUserLayer();
       setupOrderLayer();
+      setupUserLayer();
       updateUserLayer();
 
       fetchOrderCheck();
@@ -109,7 +109,7 @@ const Main = memo(() => {
 
   function setupUserLayer() {
     map.current.addSource(USER_ID, createEmptySource());
-    map.current.addLayer(createUserLayer());
+    map.current.addLayer(createUserLayer(false), ORDER_ID);
   }
 
   function updateUserLayer() {
@@ -135,7 +135,7 @@ const Main = memo(() => {
 
     if (!source) return;
 
-    const features = mapOrderDataToDataSource(info);
+    const features = mapOrderDataToDataSource(info, false);
 
     source.setData({
       type: "FeatureCollection",

@@ -35,14 +35,14 @@ export const createFeatureWithLatLng = (latitude = 1, longitude = 1) => ({
   properties: {},
 });
 
-export const createUserLayer = () => ({
+export const createUserLayer = (isCustomer) => ({
   id: USER_ID,
   type: "symbol",
   source: USER_ID,
   layout: {
     "icon-size": 0.4,
     "icon-allow-overlap": true,
-    "icon-image": "icon-customer",
+    "icon-image": isCustomer ? "icon-customer" : "icon-driver",
     "icon-ignore-placement": true,
     "text-field": "Vị trí của bạn",
     "text-size": 13,
@@ -77,7 +77,7 @@ export const createOrderLayer = () => ({
   },
 });
 
-export const mapOrderDataToDataSource = (info) => {
+export const mapOrderDataToDataSource = (info, isCustomer) => {
   if (!info) return [];
 
   const {
@@ -93,14 +93,14 @@ export const mapOrderDataToDataSource = (info) => {
     {
       lat: customerLat,
       lng: customerLng,
-      text: "Vị trí của bạn",
+      text: isCustomer ? "Vị trí của bạn" : "Vị trí người gửi",
       color: "#E74C3C",
       icon: "icon-customer",
     },
     {
       lat: driverLat,
       lng: driverLng,
-      text: "Vị trí tài xế",
+      text: isCustomer ? "Vị trí tài xế" : "Vị trí của bạn",
       color: "#8DC26F",
       icon: "icon-driver",
     },

@@ -67,7 +67,6 @@ const Main = memo(() => {
   const { user } = useAuth();
   const { location } = useGlobal();
   const [open, setOpen] = useState(false);
-  const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState(null);
   const {
@@ -106,7 +105,7 @@ const Main = memo(() => {
 
   function setupUserLayer() {
     map.current.addSource(USER_ID, createEmptySource());
-    map.current.addLayer(createUserLayer());
+    map.current.addLayer(createUserLayer(true));
   }
 
   function updateUserLayer() {
@@ -130,11 +129,15 @@ const Main = memo(() => {
   }
 
   function handleAcceptRequest(info) {
+    const data = info;
     setLoading(false);
     setOpen(false);
 
     toast.success("Đơn hàng của bạn đã được chấp nhận");
-    history.push(`/order/${info.uuid}`, { info });
+
+    setTimeout(() => {
+      history.push(`/order/${data.uuid}`, { data });
+    }, 1000);
   }
 
   function handleCancelRequest() {
